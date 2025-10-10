@@ -482,21 +482,22 @@
 			? ''
 			: 'invisible'}"
 	>
-		<div class="px-1.5 flex justify-between space-x-1 text-gray-600 dark:text-gray-400">
+		<!-- Header: Burger Menu + Logo + Brand Name -->
+		<div class="px-2.5 py-2 flex items-center space-x-2">
 			<button
-				class=" cursor-pointer p-[7px] flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+				class="cursor-pointer p-1.5 flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition"
 				on:click={() => {
 					showSidebar.set(!$showSidebar);
 				}}
 			>
-				<div class=" m-auto self-center">
+				<div class="m-auto self-center">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
 						viewBox="0 0 24 24"
 						stroke-width="2"
 						stroke="currentColor"
-						class="size-5"
+						class="size-5 text-gray-600 dark:text-gray-400"
 					>
 						<path
 							stroke-linecap="round"
@@ -507,9 +508,29 @@
 				</div>
 			</button>
 
+			<div class="flex items-center space-x-2 flex-1">
+				<img
+					crossorigin="anonymous"
+					src="{WEBUI_BASE_URL}/static/favicon.png"
+					class="size-7 rounded-full"
+					alt="Allwyn AI Studio logo"
+				/>
+				<div class="font-semibold text-base text-gray-850 dark:text-white font-primary">
+					Allwyn AI Studio
+				</div>
+			</div>
+		</div>
+
+		<!-- Divider -->
+		<div class="px-2.5 pb-2">
+			<div class="border-b border-gray-200 dark:border-gray-700"></div>
+		</div>
+
+		<!-- New Chat Button -->
+		<div class="px-1.5 pb-1">
 			<a
 				id="sidebar-new-chat-button"
-				class="flex justify-between items-center flex-1 rounded-lg px-2 py-1 h-full text-right hover:bg-gray-100 dark:hover:bg-gray-900 transition no-drag-region"
+				class="flex justify-between items-center w-full rounded-lg px-3 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-900 transition no-drag-region"
 				href="/"
 				draggable="false"
 				on:click={async () => {
@@ -524,22 +545,11 @@
 					}, 0);
 				}}
 			>
-				<div class="flex items-center">
-					<div class="self-center mx-1.5">
-						<img
-							crossorigin="anonymous"
-							src="{WEBUI_BASE_URL}/static/favicon.png"
-							class=" size-5 -translate-x-1.5 rounded-full"
-							alt="logo"
-						/>
-					</div>
-					<div class=" self-center font-medium text-sm text-gray-850 dark:text-white font-primary">
+				<div class="flex items-center space-x-3">
+					<PencilSquare className="size-5 text-gray-600 dark:text-gray-400" strokeWidth="2" />
+					<div class="font-medium text-sm text-gray-850 dark:text-white font-primary">
 						{$i18n.t('New Chat')}
 					</div>
-				</div>
-
-				<div>
-					<PencilSquare className=" size-5" strokeWidth="2" />
 				</div>
 			</a>
 		</div>
