@@ -482,33 +482,9 @@
 			? ''
 			: 'invisible'}"
 	>
-		<!-- Header: Burger Menu + Logo + Brand Name -->
-		<div class="px-2.5 py-2 flex items-center space-x-2">
-			<button
-				class="cursor-pointer p-1.5 flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition"
-				on:click={() => {
-					showSidebar.set(!$showSidebar);
-				}}
-			>
-				<div class="m-auto self-center">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="2"
-						stroke="currentColor"
-						class="size-5 text-gray-600 dark:text-gray-400"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"
-						/>
-					</svg>
-				</div>
-			</button>
-
-			<div class="flex items-center space-x-2 flex-1">
+		<!-- Header: Logo + Brand Name + Collapse Button -->
+		<div class="px-3 py-2.5 flex items-center justify-between">
+			<div class="flex items-center space-x-2.5">
 				<img
 					crossorigin="anonymous"
 					src="{WEBUI_BASE_URL}/static/favicon.png"
@@ -519,11 +495,36 @@
 					Allwyn AI Studio
 				</div>
 			</div>
+
+			<button
+				class="cursor-pointer p-1.5 flex rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+				on:click={() => {
+					showSidebar.set(!$showSidebar);
+				}}
+				aria-label="Collapse Sidebar"
+			>
+				<div class="m-auto self-center">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="2"
+						stroke="currentColor"
+						class="size-5 text-gray-500 dark:text-gray-500"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M15.75 19.5L8.25 12l7.5-7.5"
+						/>
+					</svg>
+				</div>
+			</button>
 		</div>
 
 		<!-- Divider -->
-		<div class="px-2.5 pb-2">
-			<div class="border-b border-gray-200 dark:border-gray-700"></div>
+		<div class="px-3 pt-2 pb-3">
+			<div class="border-b border-gray-100 dark:border-gray-800"></div>
 		</div>
 
 		<!-- New Chat Button -->
