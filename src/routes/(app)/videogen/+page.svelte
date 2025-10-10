@@ -27,6 +27,9 @@
 Duration: ${duration}s
 Aspect Ratio: ${aspectRatio}`;
 
+		// Clear any stored model selections to ensure URL parameter is used
+		sessionStorage.removeItem('selectedModels');
+
 		// Store the message in sessionStorage to be picked up by the chat interface
 		sessionStorage.setItem('videogen_initial_message', formattedMessage);
 

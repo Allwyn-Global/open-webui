@@ -655,9 +655,13 @@
 		} else if ($page.url.searchParams.get('model')) {
 			const urlModels = $page.url.searchParams.get('model')?.split(',');
 
+			// Always use URL parameter models, even if not found in list
+			selectedModels = urlModels;
+
 			if (urlModels.length === 1) {
 				const m = $models.find((m) => m.id === urlModels[0]);
 				if (!m) {
+					// Model not found - try to open selector to search for it
 					const modelSelectorButton = document.getElementById('model-selector-0-button');
 					if (modelSelectorButton) {
 						modelSelectorButton.click();
@@ -670,11 +674,7 @@
 							modelSelectorInput.dispatchEvent(new Event('input'));
 						}
 					}
-				} else {
-					selectedModels = urlModels;
 				}
-			} else {
-				selectedModels = urlModels;
 			}
 		} else {
 			if (sessionStorage.selectedModels) {
@@ -690,7 +690,12 @@
 			}
 		}
 
-		selectedModels = selectedModels.filter((modelId) => $models.map((m) => m.id).includes(modelId));
+		// Only filter out invalid models if they didn't come from URL parameters
+		const hasUrlModel = $page.url.searchParams.get('model') || $page.url.searchParams.get('models');
+		if (!hasUrlModel) {
+			selectedModels = selectedModels.filter((modelId) => $models.map((m) => m.id).includes(modelId));
+		}
+
 		if (selectedModels.length === 0 || (selectedModels.length === 1 && selectedModels[0] === '')) {
 			if ($models.length > 0) {
 				selectedModels = [$models[0].id];
