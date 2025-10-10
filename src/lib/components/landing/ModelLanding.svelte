@@ -110,7 +110,7 @@
 
 	const startChatWithModel = (modelId: string) => {
 		// Check if this is the video generator - route to form instead
-		if (modelId.toLowerCase().includes('video') || modelId === 'videoGen') {
+		if (modelId.toLowerCase().includes('video') || modelId === 'videogen') {
 			goto('/videogen');
 			return;
 		}
@@ -211,7 +211,7 @@
 			};
 		}
 
-		if (modelId.toLowerCase().includes('video') || modelId === 'videoGen') {
+		if (modelId.toLowerCase().includes('video') || modelId === 'videogen') {
 			return {
 				emoji: '🎬',
 				name: 'Video Generator',
