@@ -4,6 +4,7 @@
 	import { models, showSidebar } from '$lib/stores';
 	import { getModels, getPipelines } from '$lib/apis';
 	import { getFunctions } from '$lib/apis/functions';
+	import MenuLines from '../icons/MenuLines.svelte';
 	import type { i18n as i18nType } from 'i18next';
 	const i18n: Writable<i18nType> = getContext('i18n');
 	import type { Writable } from 'svelte/store';
@@ -281,6 +282,26 @@
 		? 'md:max-w-[calc(100%-260px)]'
 		: ''} w-full max-w-full flex flex-col"
 >
+	<!-- Hamburger menu button -->
+	<div class="sticky top-0 z-30 w-full py-1.5">
+		<div class="flex items-center w-full px-1.5">
+			<div class="{$showSidebar ? 'md:hidden' : ''} mr-1 flex items-center">
+				<button
+					id="sidebar-toggle-button"
+					class="cursor-pointer px-2 py-2 flex rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition text-gray-600 dark:text-gray-400"
+					on:click={() => {
+						showSidebar.set(!$showSidebar);
+					}}
+					aria-label="Toggle Sidebar"
+				>
+					<div class="m-auto self-center">
+						<MenuLines />
+					</div>
+				</button>
+			</div>
+		</div>
+	</div>
+
 	<div class="landing-container">
 		<div class="header-section">
 			<img src="/static/logo.png" alt="Allwyn AI Studio" class="logo" />
