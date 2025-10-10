@@ -109,8 +109,8 @@
 	});
 
 	const startChatWithModel = (modelId: string) => {
-		// Check if this is the video/image generator - route to form instead
-		if (modelId.toLowerCase().includes('image') || modelId === 'imageGen' || modelId.includes('n8n')) {
+		// Check if this is the video generator - route to form instead
+		if (modelId.toLowerCase().includes('video') || modelId === 'videoGen') {
 			goto('/videogen');
 			return;
 		}
@@ -208,6 +208,16 @@
 				description: 'Create high-quality audio content from text scripts or prompts',
 				specs: 'Conversational • Audio Synthesis',
 				tags: ['Audio', 'Creative']
+			};
+		}
+
+		if (modelId.toLowerCase().includes('video') || modelId === 'videoGen') {
+			return {
+				emoji: '🎬',
+				name: 'Video Generator',
+				description: 'Generate, edit and animate your videos with AI-powered creativity',
+				specs: 'n8n Workflow • Video Generation',
+				tags: ['Creative', 'Workflow']
 			};
 		}
 

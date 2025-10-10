@@ -6,7 +6,7 @@
 
 	let script = '';
 	let duration = '12';
-	let aspectRatio = 'landscape';
+	let aspectRatio = '16:9';
 	let isSubmitting = false;
 
 	const handleSubmit = async () => {
@@ -27,7 +27,7 @@ Aspect Ratio: ${aspectRatio}`;
 
 		// Navigate to chat with the videogen model/pipeline
 		// The chat interface will check for the stored message and send it automatically
-		await goto('/?model=imageGen');
+		await goto('/?model=videoGen');
 	};
 </script>
 
@@ -87,7 +87,7 @@ Aspect Ratio: ${aspectRatio}`;
 						<input
 							type="radio"
 							bind:group={aspectRatio}
-							value="landscape"
+							value="16:9"
 							class="w-4 h-4 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
 						/>
 						<span class="ml-3 text-sm text-gray-900 dark:text-white">
@@ -98,7 +98,7 @@ Aspect Ratio: ${aspectRatio}`;
 						<input
 							type="radio"
 							bind:group={aspectRatio}
-							value="portrait"
+							value="9:16"
 							class="w-4 h-4 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
 						/>
 						<span class="ml-3 text-sm text-gray-900 dark:text-white">
