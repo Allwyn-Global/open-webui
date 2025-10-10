@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { getContext } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 
 	const i18n = getContext('i18n');
 
@@ -8,6 +8,11 @@
 	let duration = '12';
 	let aspectRatio = '16:9';
 	let isSubmitting = false;
+
+	// Clear any stale videogen message when form loads
+	onMount(() => {
+		sessionStorage.removeItem('videogen_initial_message');
+	});
 
 	const handleSubmit = async () => {
 		// Validate script is not empty
