@@ -276,12 +276,17 @@
 	};
 </script>
 
-<div class="landing-container" class:sidebar-expanded={$showSidebar} class:sidebar-collapsed={!$showSidebar}>
-	<div class="header-section">
-		<img src="/static/logo.png" alt="Allwyn AI Studio" class="logo" />
-		<h1 class="main-title">Welcome to Allwyn AI Studio</h1>
-		<p class="subtitle">Choose your use case and start generating</p>
-	</div>
+<div
+	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
+		? 'md:max-w-[calc(100%-260px)]'
+		: ''} w-full max-w-full flex flex-col"
+>
+	<div class="landing-container">
+		<div class="header-section">
+			<img src="/static/logo.png" alt="Allwyn AI Studio" class="logo" />
+			<h1 class="main-title">Welcome to Allwyn AI Studio</h1>
+			<p class="subtitle">Choose your use case and start generating</p>
+		</div>
 
 	<!-- Filter and Search Section -->
 	<div class="filters-section">
@@ -337,35 +342,25 @@
 		{/if}
 	</div>
 
-	<div class="footer">
-		<p>Vibe coded with love ❤️</p>
+		<div class="footer">
+			<p>Vibe coded with love ❤️</p>
+		</div>
 	</div>
 </div>
 
 <style>
 	.landing-container {
-		min-height: 100vh;
+		height: 100%;
 		padding: 3.2rem;
 		color: var(--color-gray-900);
 		background: var(--color-gray-50);
-		width: 100%;
-		transition: width 0.2s ease-in-out;
-		position: relative;
-		z-index: 1;
+		overflow-y: auto;
 	}
 
 	/* Dark mode colors */
 	:global(.dark) .landing-container {
 		color: var(--color-gray-100);
 		background: var(--color-gray-900);
-	}
-
-	.landing-container.sidebar-expanded {
-		width: calc(100vw - 260px);
-	}
-
-	.landing-container.sidebar-collapsed {
-		width: calc(100vw - 48px);
 	}
 
 	.header-section {
