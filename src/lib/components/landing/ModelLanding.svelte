@@ -109,6 +109,12 @@
 	});
 
 	const startChatWithModel = (modelId: string) => {
+		// Check if this is the video/image generator - route to form instead
+		if (modelId.toLowerCase().includes('image') || modelId === 'imageGen' || modelId.includes('n8n')) {
+			goto('/videogen');
+			return;
+		}
+
 		// Navigate to chat with the selected model
 		goto(`/?model=${modelId}`);
 	};

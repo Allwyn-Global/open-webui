@@ -431,6 +431,22 @@
 			}
 		}
 
+		// Check for videogen initial message from form
+		const videogenMessage = sessionStorage.getItem('videogen_initial_message');
+		if (videogenMessage) {
+			// Remove the stored message
+			sessionStorage.removeItem('videogen_initial_message');
+
+			// Wait a bit for the chat to fully initialize
+			await tick();
+			await new Promise(resolve => setTimeout(resolve, 500));
+
+			// Submit the message
+			if (videogenMessage.trim()) {
+				await submitPrompt(videogenMessage);
+			}
+		}
+
 		showControls.subscribe(async (value) => {
 			if (controlPane && !$mobile) {
 				try {
