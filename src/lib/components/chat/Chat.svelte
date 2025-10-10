@@ -690,17 +690,18 @@
 			}
 		}
 
-		// Only filter out invalid models if they didn't come from URL parameters
+			// Only filter out invalid models if they didn't come from URL parameters
 		const hasUrlModel = $page.url.searchParams.get('model') || $page.url.searchParams.get('models');
 		if (!hasUrlModel) {
 			selectedModels = selectedModels.filter((modelId) => $models.map((m) => m.id).includes(modelId));
-		}
 
-		if (selectedModels.length === 0 || (selectedModels.length === 1 && selectedModels[0] === '')) {
-			if ($models.length > 0) {
-				selectedModels = [$models[0].id];
-			} else {
-				selectedModels = [''];
+			// Only apply fallback if NOT from URL parameters
+			if (selectedModels.length === 0 || (selectedModels.length === 1 && selectedModels[0] === '')) {
+				if ($models.length > 0) {
+					selectedModels = [$models[0].id];
+				} else {
+					selectedModels = [''];
+				}
 			}
 		}
 
