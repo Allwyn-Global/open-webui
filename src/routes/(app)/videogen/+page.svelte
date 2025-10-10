@@ -35,7 +35,7 @@ Aspect Ratio: ${aspectRatio}`;
 
 		// Navigate to chat with the videogen model/pipeline
 		// The chat interface will check for the stored message and send it automatically
-		await goto('/?model=videoGen');
+		await goto('/?model=function_videogen');
 	};
 </script>
 
