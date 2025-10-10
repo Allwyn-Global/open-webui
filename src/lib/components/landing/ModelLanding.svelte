@@ -343,13 +343,6 @@
 </div>
 
 <style>
-	/* Use sticky positioning for sidebar - works better across all views */
-	:global(#sidebar) {
-		position: sticky !important;
-		left: 0 !important;
-		top: 0px !important;
-	}
-
 	.landing-container {
 		min-height: 100vh;
 		padding: 3.2rem;
@@ -357,6 +350,8 @@
 		background: var(--color-gray-50);
 		width: 100%;
 		transition: width 0.2s ease-in-out;
+		position: relative;
+		z-index: 1;
 	}
 
 	/* Dark mode colors */
