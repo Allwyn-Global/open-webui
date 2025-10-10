@@ -781,9 +781,13 @@
 			}
 		}
 
-		selectedModels = selectedModels.map((modelId) =>
-			$models.map((m) => m.id).includes(modelId) ? modelId : ''
-		);
+		// Don't filter out URL parameter models - they should be trusted
+		const urlHasModel = $page.url.searchParams.get('model') || $page.url.searchParams.get('models');
+		if (!urlHasModel) {
+			selectedModels = selectedModels.map((modelId) =>
+				$models.map((m) => m.id).includes(modelId) ? modelId : ''
+			);
+		}
 
 		const userSettings = await getUserSettings(localStorage.token);
 
