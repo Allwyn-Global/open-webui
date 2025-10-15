@@ -7,7 +7,7 @@
 	import { getContext, onDestroy, onMount, tick } from 'svelte';
 	const i18n: Writable<i18nType> = getContext('i18n');
 
-	import { goto } from '$app/navigation';
+	import { goto, afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
 
 	import { get, type Unsubscriber, type Writable } from 'svelte/store';
@@ -357,6 +357,36 @@
 		}
 	};
 
+	// Use afterNavigate to handle videogen submissions after every navigation
+	afterNavigate(async () => {
+		const videogenMessage = sessionStorage.getItem('videogen_initial_message');
+		if (videogenMessage) {
+			console.log('=== VIDEOGEN AUTO-SUBMIT (afterNavigate) ===');
+			console.log('Found videogen message:', videogenMessage);
+			console.log('Current URL:', $page.url.href);
+
+			// Remove the stored message immediately
+			sessionStorage.removeItem('videogen_initial_message');
+
+			// Check if we have a URL model parameter
+			const urlModel = $page.url.searchParams.get('model');
+			if (urlModel) {
+				console.log('URL model parameter:', urlModel);
+				// Set the selected model from URL
+				selectedModels = [urlModel];
+				console.log('Set selectedModels to:', selectedModels);
+			}
+
+			// Submit the message after a short delay
+			if (videogenMessage.trim()) {
+				await tick();
+				await new Promise(resolve => setTimeout(resolve, 300));
+				console.log('Submitting videogen prompt');
+				submitPrompt(videogenMessage);
+			}
+		}
+	});
+
 	const onMessageHandler = async (event: {
 		origin: string;
 		data: { type: string; text: string };
@@ -650,18 +680,30 @@
 	//////////////////////////
 
 	const initNewChat = async () => {
+		console.log('=== initNewChat DEBUG START ===');
+		console.log('URL:', $page.url.href);
+		console.log('URL searchParams:', Object.fromEntries($page.url.searchParams));
+		console.log('Available models ($models):', $models.map(m => ({ id: m.id, name: m.name, type: m?.info?.meta?.profile_image_url ? 'function' : 'ollama' })));
+
 		if ($page.url.searchParams.get('models')) {
 			selectedModels = $page.url.searchParams.get('models')?.split(',');
+			console.log('Set selectedModels from "models" param:', selectedModels);
 		} else if ($page.url.searchParams.get('model')) {
 			const urlModels = $page.url.searchParams.get('model')?.split(',');
+			console.log('URL model parameter:', urlModels);
 
 			// Always use URL parameter models, even if not found in list
 			selectedModels = urlModels;
+			console.log('Set selectedModels from "model" param:', selectedModels);
 
 			if (urlModels.length === 1) {
 				const m = $models.find((m) => m.id === urlModels[0]);
+				console.log('Looking for model with id:', urlModels[0]);
+				console.log('Model found in $models?', m ? `YES - ${m.id} (${m.name})` : 'NO');
+
 				if (!m) {
 					// Model not found - try to open selector to search for it
+					console.log('Model not found, opening dropdown with search value:', urlModels[0]);
 					const modelSelectorButton = document.getElementById('model-selector-0-button');
 					if (modelSelectorButton) {
 						modelSelectorButton.click();
@@ -671,39 +713,55 @@
 						if (modelSelectorInput) {
 							modelSelectorInput.focus();
 							modelSelectorInput.value = urlModels[0];
+							console.log('Set search input value to:', urlModels[0]);
 							modelSelectorInput.dispatchEvent(new Event('input'));
 						}
 					}
 				}
 			}
 		} else {
+			console.log('No URL model parameter, using fallback');
 			if (sessionStorage.selectedModels) {
 				selectedModels = JSON.parse(sessionStorage.selectedModels);
+				console.log('Loaded from sessionStorage:', selectedModels);
 				sessionStorage.removeItem('selectedModels');
 			} else {
 				if ($settings?.models) {
 					selectedModels = $settings?.models;
+					console.log('Loaded from settings:', selectedModels);
 				} else if ($config?.default_models) {
 					console.log($config?.default_models.split(',') ?? '');
 					selectedModels = $config?.default_models.split(',');
+					console.log('Loaded from config:', selectedModels);
 				}
 			}
 		}
 
 			// Only filter out invalid models if they didn't come from URL parameters
 		const hasUrlModel = $page.url.searchParams.get('model') || $page.url.searchParams.get('models');
+		console.log('hasUrlModel?', hasUrlModel ? `YES: ${hasUrlModel}` : 'NO');
+
 		if (!hasUrlModel) {
+			console.log('Filtering invalid models (before):', selectedModels);
 			selectedModels = selectedModels.filter((modelId) => $models.map((m) => m.id).includes(modelId));
+			console.log('Filtering invalid models (after):', selectedModels);
 
 			// Only apply fallback if NOT from URL parameters
 			if (selectedModels.length === 0 || (selectedModels.length === 1 && selectedModels[0] === '')) {
 				if ($models.length > 0) {
 					selectedModels = [$models[0].id];
+					console.log('Applied fallback to first model:', selectedModels);
 				} else {
 					selectedModels = [''];
+					console.log('No models available, set to empty');
 				}
 			}
+		} else {
+			console.log('SKIPPING validation because URL parameter is present');
 		}
+
+		console.log('Final selectedModels after validation:', selectedModels);
+		console.log('=== initNewChat DEBUG END ===');
 
 		await showControls.set(false);
 		await showCallOverlay.set(false);
@@ -766,28 +824,6 @@
 				await tick();
 				submitPrompt(prompt);
 			}
-		}
-
-		// Check for videogen initial message from form
-		const videogenMessage = sessionStorage.getItem('videogen_initial_message');
-		if (videogenMessage) {
-			// Remove the stored message immediately
-			sessionStorage.removeItem('videogen_initial_message');
-
-			// Submit the message after models are set
-			if (videogenMessage.trim()) {
-				await tick();
-				await new Promise(resolve => setTimeout(resolve, 100));
-				submitPrompt(videogenMessage);
-			}
-		}
-
-		// Don't filter out URL parameter models - they should be trusted
-		const urlHasModel = $page.url.searchParams.get('model') || $page.url.searchParams.get('models');
-		if (!urlHasModel) {
-			selectedModels = selectedModels.map((modelId) =>
-				$models.map((m) => m.id).includes(modelId) ? modelId : ''
-			);
 		}
 
 		const userSettings = await getUserSettings(localStorage.token);

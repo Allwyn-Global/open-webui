@@ -14,6 +14,11 @@
 		citations: $i18n.t('Displays citations in the response')
 	};
 
+	// Helper function to safely get help text
+	const getHelpText = (capability: string) => {
+		return helpText[capability] || $i18n.t(capability) || '';
+	};
+
 	export let capabilities: {
 		vision?: boolean;
 		usage?: boolean;
@@ -36,7 +41,7 @@
 				/>
 
 				<div class=" py-0.5 text-sm capitalize">
-					<Tooltip content={marked.parse(helpText[capability])}>
+					<Tooltip content={marked.parse(getHelpText(capability))}>
 						{$i18n.t(capability)}
 					</Tooltip>
 				</div>

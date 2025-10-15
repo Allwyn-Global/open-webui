@@ -27,15 +27,24 @@
 Duration: ${duration}s
 Aspect Ratio: ${aspectRatio}`;
 
+		console.log('=== VIDEOGEN FORM SUBMIT DEBUG ===');
+		console.log('Formatted message:', formattedMessage);
+
 		// Clear any stored model selections to ensure URL parameter is used
 		sessionStorage.removeItem('selectedModels');
+		console.log('Cleared sessionStorage.selectedModels');
 
 		// Store the message in sessionStorage to be picked up by the chat interface
 		sessionStorage.setItem('videogen_initial_message', formattedMessage);
+		console.log('Stored videogen_initial_message in sessionStorage');
 
 		// Navigate to chat with the videogen model/pipeline
 		// The chat interface will check for the stored message and send it automatically
-		await goto('/?model=videogen');
+		const targetUrl = '/?model=videogen';
+		console.log('Navigating to:', targetUrl);
+		console.log('=== END VIDEOGEN FORM SUBMIT DEBUG ===');
+
+		await goto(targetUrl);
 	};
 </script>
 

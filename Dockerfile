@@ -164,6 +164,9 @@ COPY --chown=$UID:$GID --from=build /app/package.json /app/package.json
 # copy backend files
 COPY --chown=$UID:$GID ./backend .
 
+# Ensure custom favicon is used in backend static directory
+COPY --chown=$UID:$GID ./static/favicon.png ./open_webui/static/favicon.png
+
 EXPOSE 8080
 
 HEALTHCHECK CMD curl --silent --fail http://localhost:${PORT:-8080}/health | jq -ne 'input.status == true' || exit 1
