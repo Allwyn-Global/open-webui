@@ -5,6 +5,7 @@
 	import { getModels, getPipelines } from '$lib/apis';
 	import { getFunctions } from '$lib/apis/functions';
 	import MenuLines from '../icons/MenuLines.svelte';
+	import Search from '../icons/Search.svelte';
 	import type { i18n as i18nType } from 'i18next';
 	const i18n: Writable<i18nType> = getContext('i18n');
 	import type { Writable } from 'svelte/store';
@@ -13,9 +14,15 @@
 	let filteredModels = [];
 	let selectedTags = [];
 	let searchQuery = '';
+	let searchExpanded = false;
 
-	// Get all unique tags from dynamically loaded models
-	$: allTags = [...new Set(filteredModels.map(model => getModelInfo(model.id).tags || []).flat())].sort();
+	// Get current year for copyright
+	const currentYear = new Date().getFullYear();
+
+	// Get all unique tags from dynamically loaded models, excluding 'Workflow'
+	$: allTags = [...new Set(filteredModels.map(model => getModelInfo(model.id).tags || []).flat())]
+		.filter(tag => tag !== 'Workflow')
+		.sort();
 
 	// Filter models based on selected tags and search query
 	$: {
@@ -46,6 +53,11 @@
 	const clearAllFilters = () => {
 		selectedTags = [];
 		searchQuery = '';
+	};
+
+	// Auto-focus input when expanded
+	const focusOnMount = (node: HTMLInputElement) => {
+		node.focus();
 	};
 
 	onMount(async () => {
@@ -122,173 +134,102 @@
 	const getModelInfo = (modelId: string) => {
 		const model = availableModels.find(m => m.id === modelId);
 
-		// Handle functions
-		if (model?.type === 'function') {
-			// Marketing code function variants
-			if (modelId.toLowerCase().includes('marketing')) {
-				return {
-					emoji: '📊',
-					name: 'Marketing Code',
-					description: 'Reviews campaign concepts and visuals against the Allwyn Marketing Code',
-					specs: 'Brand compliance • Campaign review',
-					tags: ['AI Chat', 'Marketing']
-				};
+		// Extract name and description from model metadata
+		const getFullName = () => {
+			// Try to get name from model metadata
+			if (model?.name) return model.name;
+			if (model?.info?.name) return model.info.name;
+			// Fallback: format ID as name
+			return modelId.replace(/[_.:]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+		};
+
+		// Extract emoji from name or use default
+		const fullName = getFullName();
+		const emojiRegex = /^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/u;
+		const emojiMatch = fullName.match(emojiRegex);
+
+		const getEmoji = () => {
+			// If name starts with emoji, use it
+			if (emojiMatch) {
+				return emojiMatch[0];
 			}
 
-			// Audio generation function
-			if (modelId.toLowerCase().includes('audio')) {
-				return {
-					emoji: '🎵',
-					name: 'Audio Generator',
-					description: 'Create high-quality audio content from text scripts or prompts',
-					specs: 'Conversational • Audio Synthesis',
-					tags: ['Audio', 'Creative']
-				};
+			// Otherwise use pattern-based fallback
+			const type = model?.type;
+			if (type === 'function') return '⚙️';
+			if (type === 'pipeline') return '🔗';
+
+			// Pattern matching on ID/name
+			const searchText = (fullName + modelId).toLowerCase();
+			if (searchText.includes('video')) return '🎬';
+			if (searchText.includes('image') || searchText.includes('n8n')) return '🎨';
+			if (searchText.includes('audio')) return '🎵';
+			if (searchText.includes('marketing')) return '📊';
+			if (searchText.includes('research')) return '🔍';
+			if (searchText.includes('vision')) return '👀';
+			return '🤖';
+		};
+
+		const getName = () => {
+			// Remove emoji from name if present
+			if (emojiMatch) {
+				return fullName.slice(emojiMatch[0].length).trim();
+			}
+			return fullName;
+		};
+
+		const getDescription = () => {
+			// Try to get description from model metadata
+			if (model?.meta?.description) return model.meta.description;
+			if (model?.info?.meta?.description) return model.info.meta.description;
+			if (model?.description) return model.description;
+			// Fallback generic descriptions
+			if (model?.type === 'function') return 'Custom function for enhanced capabilities';
+			if (model?.type === 'pipeline') return 'Pipeline for advanced processing workflows';
+			return 'AI language model';
+		};
+
+		// Get tags based on model type and ID patterns
+		const getTags = () => {
+			const tags = [];
+
+			// If model has tags, extract string values
+			if (model?.tags && Array.isArray(model.tags)) {
+				// Handle both string arrays and object arrays
+				const extractedTags = model.tags.map(tag => {
+					if (typeof tag === 'string') return tag;
+					if (tag?.name) return tag.name;
+					if (tag?.label) return tag.label;
+					return null;
+				}).filter(tag => tag !== null);
+
+				if (extractedTags.length > 0) return extractedTags;
 			}
 
-			// User researcher function
-			if (modelId.toLowerCase().includes('researcher')) {
-				return {
-					emoji: '🔍',
-					name: 'User Researcher',
-					description: 'Expert user researcher for fast, unmoderated testing via self-serve research platforms',
-					specs: 'Research focused • User testing',
-					tags: ['Research']
-				};
+			// Infer tags from ID and type
+			if (model?.type === 'function' || model?.type === 'pipeline') {
+				if (modelId.toLowerCase().includes('video') || modelId.toLowerCase().includes('image') || modelId.toLowerCase().includes('audio')) {
+					tags.push('Creative');
+				}
+				if (modelId.toLowerCase().includes('marketing')) {
+					tags.push('Marketing');
+				}
+				if (modelId.toLowerCase().includes('research')) {
+					tags.push('Research');
+				}
+			} else {
+				tags.push('AI Chat');
 			}
 
-			// Default function
-			return {
-				emoji: '⚙️',
-				name: model.name || modelId.replace(/[_.:]/g, ' '),
-				description: 'Custom function for enhanced capabilities',
-				specs: 'Function • Custom logic',
-				tags: ['Workflow']
-			};
-		}
+			return tags.length > 0 ? tags : ['AI Chat'];
+		};
 
-		// Handle pipelines
-		if (model?.type === 'pipeline') {
-			// N8N workflow for image generation
-			if (modelId.toLowerCase().includes('n8n') || modelId.toLowerCase().includes('workflow') || modelId.toLowerCase().includes('image')) {
-				return {
-					emoji: '🎨',
-					name: 'Image Generator',
-					description: 'Generate, edit and animate your images with AI-powered creativity',
-					specs: 'n8n Workflow • Image Generation',
-					tags: ['Creative', 'Workflow']
-				};
-			}
-
-			// Default pipeline
-			return {
-				emoji: '🔗',
-				name: model.name || modelId.replace(/[_.:]/g, ' '),
-				description: 'Pipeline for advanced processing workflows',
-				specs: 'Pipeline • Multi-step processing',
-				tags: ['Workflow']
-			};
-		}
-
-		// Handle functions/pipelines by ID pattern matching (catch all for items without type)
-		if (modelId.toLowerCase().includes('marketing') || modelId === 'marketingCode') {
-			return {
-				emoji: '📊',
-				name: 'Marketing Code',
-				description: 'Reviews campaign concepts and visuals against the Allwyn Marketing Code',
-				specs: 'Brand compliance • Campaign review',
-				tags: ['AI Chat', 'Marketing']
-			};
-		}
-
-		if (modelId.toLowerCase().includes('audio') || modelId === 'audioGen') {
-			return {
-				emoji: '🎵',
-				name: 'Audio Generator',
-				description: 'Create high-quality audio content from text scripts or prompts',
-				specs: 'Conversational • Audio Synthesis',
-				tags: ['Audio', 'Creative']
-			};
-		}
-
-		if (modelId.toLowerCase().includes('video') || modelId === 'videogen') {
-			return {
-				emoji: '🎬',
-				name: 'Video Generator',
-				description: 'Generate, edit and animate your videos with AI-powered creativity',
-				specs: 'n8n Workflow • Video Generation',
-				tags: ['Creative', 'Workflow']
-			};
-		}
-
-		if (modelId.toLowerCase().includes('image') || modelId === 'imageGen' || modelId.includes('n8n')) {
-			return {
-				emoji: '🎨',
-				name: 'Image Generator',
-				description: 'Generate, edit and animate your images with AI-powered creativity',
-				specs: 'n8n Workflow • Image Generation',
-				tags: ['Creative', 'Workflow']
-			};
-		}
-
-		if (modelId.toLowerCase().includes('researcher')) {
-			return {
-				emoji: '🔍',
-				name: 'User Researcher',
-				description: 'Expert user researcher for fast, unmoderated testing via self-serve research platforms',
-				specs: 'Research focused • User testing',
-				tags: ['Research']
-			};
-		}
-
-		// Handle specific AI models by ID patterns
-		if (modelId.includes('qwen')) {
-			return {
-				emoji: '⚡',
-				name: 'Qwen',
-				description: 'Reasoning chat with fast responses',
-				specs: '8B parameters • Fast inference',
-				tags: ['AI Chat']
-			};
-		}
-
-		if (modelId.includes('mistral')) {
-			return {
-				emoji: '🌟',
-				name: 'Mistral',
-				description: 'Efficient and versatile model for general purpose tasks',
-				specs: '7B parameters • Balanced performance',
-				tags: ['AI Chat']
-			};
-		}
-
-		if (modelId.includes('vision')) {
-			return {
-				emoji: '👀',
-				name: 'Vision',
-				description: 'Advanced vision model for image analysis and visual Q&A',
-				specs: '11B parameters • Vision capable',
-				tags: ['Vision', 'AI Chat']
-			};
-		}
-
-		if (modelId.includes('arena')) {
-			return {
-				emoji: '🏟️',
-				name: 'Arena Model',
-				description: 'Specialized model for advanced reasoning and complex tasks',
-				specs: 'Arena-based • Advanced reasoning',
-				tags: ['AI Chat']
-			};
-		}
-
-		// Default for regular models
+		// Use dynamic data with emoji extraction
 		return {
-			emoji: '🤖',
-			name: model?.name || modelId.replace(/[_.:]/g, ' '),
-			description: 'AI language model',
-			specs: 'Available for chat',
-			tags: ['AI Chat']
+			emoji: getEmoji(),
+			name: getName(),
+			description: getDescription(),
+			tags: getTags()
 		};
 	};
 </script>
@@ -327,32 +268,65 @@
 
 	<!-- Filter and Search Section -->
 	<div class="filters-section">
-		<div class="search-container">
-			<input
-				type="text"
-				bind:value={searchQuery}
-				placeholder="Search models..."
-				class="search-input"
-			/>
-		</div>
+		<div class="filters-row">
+			{#if !searchExpanded}
+				<!-- Filter Tags (shown when search is collapsed) -->
+				<div class="filter-chips">
+					<button
+						class="filter-chip"
+						class:active={selectedTags.length === 0 && searchQuery === ''}
+						on:click={clearAllFilters}
+					>
+						All
+					</button>
+					{#each allTags as tag}
+						<button
+							class="filter-chip"
+							class:active={selectedTags.includes(tag)}
+							on:click={() => toggleTag(tag)}
+						>
+							{tag}
+						</button>
+					{/each}
+				</div>
 
-		<div class="filter-chips">
-			<button
-				class="filter-chip"
-				class:active={selectedTags.length === 0 && searchQuery === ''}
-				on:click={clearAllFilters}
-			>
-				All
-			</button>
-			{#each allTags as tag}
+				<!-- Search Icon (at the end) -->
 				<button
-					class="filter-chip"
-					class:active={selectedTags.includes(tag)}
-					on:click={() => toggleTag(tag)}
+					class="search-icon-button"
+					on:click={() => searchExpanded = true}
+					aria-label="Search"
 				>
-					{tag}
+					<Search className="w-5 h-5" />
 				</button>
-			{/each}
+			{:else}
+				<!-- Expanded Search Input (replaces filters) -->
+				<div class="search-input-wrapper">
+					<input
+						type="text"
+						bind:value={searchQuery}
+						placeholder="Search models..."
+						class="search-input"
+						on:blur={() => {
+							if (!searchQuery) {
+								searchExpanded = false;
+							}
+						}}
+						use:focusOnMount
+					/>
+					{#if searchQuery}
+						<button
+							class="search-clear-button"
+							on:click={() => {
+								searchQuery = '';
+								searchExpanded = false;
+							}}
+							aria-label="Clear search"
+						>
+							✕
+						</button>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
 
@@ -364,9 +338,10 @@
 				on:click={() => startChatWithModel(model.id)}
 			>
 				<div class="model-emoji">{modelInfo.emoji}</div>
-				<div class="model-name">{modelInfo.name}</div>
-				<div class="model-description">{modelInfo.description}</div>
-				<div class="model-specs">{modelInfo.specs}</div>
+				<div class="model-content">
+					<div class="model-name">{modelInfo.name}</div>
+					<div class="model-description">{modelInfo.description}</div>
+				</div>
 			</button>
 		{/each}
 
@@ -380,7 +355,7 @@
 	</div>
 
 		<div class="footer">
-			<p>Vibe coded with love ❤️</p>
+			<p>© {currentYear} Allwyn, All rights reserved</p>
 		</div>
 	</div>
 </div>
@@ -441,16 +416,77 @@
 		margin: 0 auto 2rem auto;
 	}
 
-	.search-container {
-		margin-bottom: 1.5rem;
+	.filters-row {
 		display: flex;
+		align-items: center;
+		gap: 1rem;
 		justify-content: center;
+		flex-wrap: wrap;
+	}
+
+	.search-container {
+		display: flex;
+		align-items: center;
+	}
+
+	.search-icon-button {
+		padding: 0.5rem;
+		background: rgba(var(--color-gray-900-rgb, 23, 23, 23), 0.05);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(var(--color-gray-900-rgb, 23, 23, 23), 0.1);
+		border-radius: 9999px; /* Fully rounded */
+		color: var(--color-gray-700);
+		cursor: pointer;
+		transition: all 0.3s ease;
+		outline: none;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+
+	:global(.dark) .search-icon-button {
+		background: rgba(var(--color-gray-100-rgb, 236, 236, 236), 0.1);
+		border-color: rgba(var(--color-gray-100-rgb, 236, 236, 236), 0.2);
+		color: var(--color-gray-300);
+	}
+
+	.search-icon-button:hover {
+		background: rgba(var(--color-gray-900-rgb, 23, 23, 23), 0.08);
+		border-color: rgba(var(--color-gray-900-rgb, 23, 23, 23), 0.15);
+		color: var(--color-gray-900);
+		transform: translateY(-1px);
+	}
+
+	:global(.dark) .search-icon-button:hover {
+		background: rgba(var(--color-gray-100-rgb, 236, 236, 236), 0.15);
+		border-color: rgba(var(--color-gray-100-rgb, 236, 236, 236), 0.3);
+		color: var(--color-gray-100);
+	}
+
+	.search-input-wrapper {
+		position: relative;
+		display: flex;
+		align-items: center;
+		flex: 1;
+		animation: expandSearch 0.3s ease;
+	}
+
+	@keyframes expandSearch {
+		from {
+			opacity: 0;
+			transform: scaleX(0.8);
+		}
+		to {
+			opacity: 1;
+			transform: scaleX(1);
+		}
 	}
 
 	.search-input {
+		flex: 1;
 		width: 100%;
-		max-width: 400px;
-		padding: 0.75rem 1rem;
+		padding: 0.5rem 2.5rem 0.5rem 1rem;
 		background: rgba(var(--color-gray-900-rgb, 23, 23, 23), 0.05);
 		backdrop-filter: blur(10px);
 		border: 1px solid rgba(var(--color-gray-900-rgb, 23, 23, 23), 0.1);
@@ -485,6 +521,33 @@
 		border-color: rgba(var(--color-gray-100-rgb, 236, 236, 236), 0.4);
 		background: rgba(var(--color-gray-100-rgb, 236, 236, 236), 0.15);
 		box-shadow: 0 0 20px rgba(var(--color-gray-100-rgb, 236, 236, 236), 0.1);
+	}
+
+	.search-clear-button {
+		position: absolute;
+		right: 0.75rem;
+		background: none;
+		border: none;
+		color: var(--color-gray-500);
+		cursor: pointer;
+		padding: 0.25rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1rem;
+		transition: color 0.2s ease;
+	}
+
+	:global(.dark) .search-clear-button {
+		color: var(--color-gray-400);
+	}
+
+	.search-clear-button:hover {
+		color: var(--color-gray-900);
+	}
+
+	:global(.dark) .search-clear-button:hover {
+		color: var(--color-gray-100);
 	}
 
 	.filter-chips {
@@ -529,16 +592,16 @@
 	}
 
 	.filter-chip.active {
-		background: rgba(var(--color-gray-900-rgb, 23, 23, 23), 0.12);
-		border-color: rgba(var(--color-gray-900-rgb, 23, 23, 23), 0.2);
-		color: var(--color-gray-900);
+		background: #27E2CC;
+		border-color: #27E2CC;
+		color: #000;
 		font-weight: 600;
 	}
 
 	:global(.dark) .filter-chip.active {
-		background: rgba(var(--color-gray-100-rgb, 236, 236, 236), 0.25);
-		border-color: rgba(var(--color-gray-100-rgb, 236, 236, 236), 0.4);
-		color: var(--color-gray-100);
+		background: #27E2CC;
+		border-color: #27E2CC;
+		color: #000;
 	}
 
 	.no-results {
@@ -576,8 +639,8 @@
 
 	.models-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-		gap: 1.48rem;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1rem;
 		max-width: 1200px;
 		margin: 0 auto;
 	}
@@ -586,13 +649,16 @@
 		background: rgba(var(--color-gray-900-rgb, 23, 23, 23), 0.05);
 		backdrop-filter: blur(10px);
 		border: 1px solid rgba(var(--color-gray-900-rgb, 23, 23, 23), 0.08);
-		border-radius: 16px;
-		padding: 1rem 2.4rem;
+		border-radius: 12px;
+		padding: 1rem 1.25rem;
 		color: var(--color-gray-900);
-		text-align: center;
+		text-align: left;
 		cursor: pointer;
 		transition: all 0.3s ease;
 		outline: none;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
 	}
 
 	:global(.dark) .model-card {
@@ -624,15 +690,24 @@
 	}
 
 	.model-emoji {
-		font-size: 2.48rem;
-		margin-bottom: 1rem;
+		font-size: 1.75rem;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.model-content {
+		flex: 1;
+		min-width: 0;
 	}
 
 	.model-name {
-		font-size: 1.32rem;
+		font-size: 1.05rem;
 		font-weight: 600;
-		margin-bottom: 0.24rem;
+		margin-bottom: 0.3rem;
 		color: var(--color-gray-900);
+		line-height: 1.3;
 	}
 
 	:global(.dark) .model-name {
@@ -640,26 +715,15 @@
 	}
 
 	.model-description {
-		font-size: 0.92rem;
+		font-size: 0.8rem;
 		opacity: 0.7;
-		line-height: 1.5;
-		margin-bottom: 1.24rem;
+		line-height: 1.4;
+		margin-bottom: 0;
 		color: var(--color-gray-600);
 	}
 
 	:global(.dark) .model-description {
 		color: var(--color-gray-400);
-	}
-
-	.model-specs {
-		font-size: 0.72rem;
-		opacity: 0.6;
-		font-style: italic;
-		color: var(--color-gray-500);
-	}
-
-	:global(.dark) .model-specs {
-		color: var(--color-gray-500);
 	}
 
 	.footer {
@@ -694,13 +758,35 @@
 			margin-bottom: 1.5rem;
 		}
 
+		.filters-row {
+			flex-direction: column;
+			gap: 0.75rem;
+		}
+
 		.search-input {
+			width: 100%;
 			max-width: 100%;
 			font-size: 16px; /* Prevents zoom on iOS */
 		}
 
+		.search-input-wrapper {
+			width: 100%;
+		}
+
+		@keyframes expandSearch {
+			from {
+				width: 40px;
+				opacity: 0;
+			}
+			to {
+				width: 100%;
+				opacity: 1;
+			}
+		}
+
 		.filter-chips {
 			gap: 0.375rem;
+			width: 100%;
 		}
 
 		.filter-chip {
@@ -710,11 +796,24 @@
 
 		.models-grid {
 			grid-template-columns: 1fr;
-			gap: 1rem;
+			gap: 0.75rem;
 		}
 
 		.model-card {
-			padding: 1.5rem;
+			padding: 0.875rem 1rem;
+			gap: 0.875rem;
+		}
+
+		.model-emoji {
+			font-size: 1.5rem;
+		}
+
+		.model-name {
+			font-size: 0.95rem;
+		}
+
+		.model-description {
+			font-size: 0.75rem;
 		}
 	}
 
