@@ -127,6 +127,12 @@
 			return;
 		}
 
+		// Check if this is the audio generator - route to form instead
+		if (modelId.toLowerCase().includes('voice') || modelId === 'audiogen') {
+			goto('/audiogen');
+			return;
+		}
+
 		// Navigate to chat with the selected model
 		goto(`/?model=${modelId}`);
 	};

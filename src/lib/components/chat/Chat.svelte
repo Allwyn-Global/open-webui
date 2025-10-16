@@ -357,9 +357,11 @@
 		}
 	};
 
-	// Use afterNavigate to handle videogen submissions after every navigation
+	// Use afterNavigate to handle videogen and audiogen submissions after every navigation
 	afterNavigate(async () => {
 		const videogenMessage = sessionStorage.getItem('videogen_initial_message');
+		const audiogenMessage = sessionStorage.getItem('audiogen_initial_message');
+
 		if (videogenMessage) {
 			console.log('=== VIDEOGEN AUTO-SUBMIT (afterNavigate) ===');
 			console.log('Found videogen message:', videogenMessage);
@@ -383,6 +385,30 @@
 				await new Promise(resolve => setTimeout(resolve, 300));
 				console.log('Submitting videogen prompt');
 				submitPrompt(videogenMessage);
+			}
+		} else if (audiogenMessage) {
+			console.log('=== AUDIOGEN AUTO-SUBMIT (afterNavigate) ===');
+			console.log('Found audiogen message:', audiogenMessage);
+			console.log('Current URL:', $page.url.href);
+
+			// Remove the stored message immediately
+			sessionStorage.removeItem('audiogen_initial_message');
+
+			// Check if we have a URL model parameter
+			const urlModel = $page.url.searchParams.get('model');
+			if (urlModel) {
+				console.log('URL model parameter:', urlModel);
+				// Set the selected model from URL
+				selectedModels = [urlModel];
+				console.log('Set selectedModels to:', selectedModels);
+			}
+
+			// Submit the message after a short delay
+			if (audiogenMessage.trim()) {
+				await tick();
+				await new Promise(resolve => setTimeout(resolve, 300));
+				console.log('Submitting audiogen prompt');
+				submitPrompt(audiogenMessage);
 			}
 		}
 	});
