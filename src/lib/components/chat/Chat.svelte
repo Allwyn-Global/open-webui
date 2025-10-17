@@ -2156,7 +2156,7 @@
 							<div
 								class="absolute bottom-1 text-xs text-gray-500 text-center line-clamp-1 right-0 left-0"
 							>
-								<!-- {$i18n.t('LLMs can make mistakes. Verify important information.')} -->
+								AI tools can make mistakes. Please follow our <a href="https://allwynent.sharepoint.com/sites/ANNA/AI/Forms/AllItems.aspx?id=%2Fsites%2FANNA%2FAI%2FAllwyn%20Group%20Core%20Guidelines%20for%20use%20of%20AI%2Epdf&parent=%2Fsites%2FANNA%2FAI" target="_blank" rel="noopener noreferrer" class="underline">AI guidelines</a> and <a href="https://allwynent.sharepoint.com/sites/ANNA/AllwynPolicies/Forms/AllItems.aspx?id=%2Fsites%2FANNA%2FAllwynPolicies%2F02%5FAllwyn%20HQ%20Data%20Protection%20Policy%2Epdf&parent=%2Fsites%2FANNA%2FAllwynPolicies" target="_blank" rel="noopener noreferrer" class="underline">data policy</a> — don't share personal or confidential information.
 							</div>
 						</div>
 					{:else}

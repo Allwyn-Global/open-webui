@@ -64,20 +64,16 @@
 	}
 </script>
 
-<div class="mb-1 flex gap-1 text-xs font-medium items-center text-gray-400 dark:text-gray-600">
-	{#if filteredPrompts.length > 0}
+{#if filteredPrompts.length > 0}
+	<div class="mb-1 flex gap-1 text-xs font-medium items-center text-gray-400 dark:text-gray-600">
 		<Bolt />
 		{$i18n.t('Suggested')}
-	{:else}
-		<!-- Keine Vorschläge -->
-
-		<div
-			class="flex w-full text-center items-center justify-center self-start text-gray-400 dark:text-gray-600"
-		>
-			{$WEBUI_NAME} ‧ v{WEBUI_VERSION}
-		</div>
-	{/if}
-</div>
+	</div>
+{:else}
+	<p class="mb-1 text-xs text-center text-gray-500 dark:text-gray-500">
+		AI tools can make mistakes. Please follow our <a href="https://allwynent.sharepoint.com/sites/ANNA/AI/Forms/AllItems.aspx?id=%2Fsites%2FANNA%2FAI%2FAllwyn%20Group%20Core%20Guidelines%20for%20use%20of%20AI%2Epdf&parent=%2Fsites%2FANNA%2FAI" target="_blank" rel="noopener noreferrer" class="underline hover:text-gray-700 dark:hover:text-gray-300">AI guidelines</a> and <a href="https://allwynent.sharepoint.com/sites/ANNA/AllwynPolicies/Forms/AllItems.aspx?id=%2Fsites%2FANNA%2FAllwynPolicies%2F02%5FAllwyn%20HQ%20Data%20Protection%20Policy%2Epdf&parent=%2Fsites%2FANNA%2FAllwynPolicies" target="_blank" rel="noopener noreferrer" class="underline hover:text-gray-700 dark:hover:text-gray-300">data policy</a> — don't share personal or confidential information.
+	</p>
+{/if}
 
 <div class="h-40 overflow-auto scrollbar-none {className} items-start">
 	{#if filteredPrompts.length > 0}
